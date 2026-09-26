@@ -141,6 +141,7 @@ export function createObservationPackExtension(): ExtensionFactory {
 		});
 
 		pi.on("context", async (event, ctx: ExtensionContext) => {
+			if (!pi.getActiveTools().includes("obs_recall")) return;
 			let root: string;
 			try {
 				root = runtimeRoot(ctx);
