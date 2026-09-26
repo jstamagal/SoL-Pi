@@ -61,14 +61,14 @@ Read our paper: [SoL-Pi: Recursively Scaling Auto-Research Loops for Efficient A
 
 - Node.js 22.19 or newer
 - npm
-- `@earendil-works/pi-coding-agent` 0.85.1
+- `@earendil-works/pi-coding-agent` 0.87.1
 
 ### Install
 
 Install the tested Pi release:
 
 ```bash
-npm install --global @earendil-works/pi-coding-agent@0.85.1
+npm install --global @earendil-works/pi-coding-agent@0.87.1
 ```
 
 Then install SoL-Pi directly from [NVlabs/SoL-Pi](https://github.com/NVlabs/SoL-Pi):
@@ -76,6 +76,16 @@ Then install SoL-Pi directly from [NVlabs/SoL-Pi](https://github.com/NVlabs/SoL-
 ```bash
 pi install git:github.com/NVlabs/SoL-Pi
 ```
+
+To run fixes from **this checkout** instead of NVIDIA's published branch, remove the upstream package registration (if present) and register this checkout user-wide:
+
+```bash
+pi remove git:github.com/NVlabs/SoL-Pi
+pi install "$PWD"
+pi list
+```
+
+Pi loads the checkout live; after pulling new commits, restart Pi. Do not also install the same checkout in project-local scope. For this branch, install Pi 0.87.1 and run `npm ci --ignore-scripts && npm run check` here first.
 
 To install it only for the current project, use the project-local scope:
 
@@ -145,7 +155,7 @@ npm audit --audit-level=high
 node scripts/check-pi-compat.mjs
 ```
 
-`npm run check` covers TypeScript, the complete test suite, and package inspection. The development dependency set is pinned to Pi 0.85.1; runtime Pi packages remain peer dependencies so Pi owns their installation and upgrades.
+`npm run check` covers TypeScript, the complete test suite, and package inspection. The development dependency set is pinned to Pi 0.87.1; runtime Pi packages remain peer dependencies so Pi owns their installation and upgrades.
 
 ## Project Status
 
