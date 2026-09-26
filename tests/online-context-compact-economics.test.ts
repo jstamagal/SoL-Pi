@@ -110,4 +110,40 @@ describe("Online Context Compact economics", () => {
 		expect(result.postCompactionTokens).toBe(21_000);
 		expect(result.breakevenRequests).toBeCloseTo(21_000 / 59_000);
 	});
+
+	it("cools down economic compaction within two requests of the last compaction", () => {
+		expect(decision({ priorCompactionCount: 1, requestsSinceLastCompaction: 1 })).toMatchObject({
+			compact: false,
+			reason: "deferred_post_compaction_cooldown",
+			requestsSinceLastCompaction: 1,
+		});
+	});
+
+	it("allows economic compaction once the cooldown window has passed", () => {
+		expect(decision({ priorCompactionCount: 1, requestsSinceLastCompaction: 2 })).toMatchObject({
+			compact: true,
+			reason: "economic",
+			requestsSinceLastCompaction: 2,
+		});
+	});
+
+	it("skips the cooldown when window protection demands a compaction", () => {
+		expect(
+			decision({
+				priorCompactionCount: 1,
+				requestsSinceLastCompaction: 1,
+				contextTokens: 195_000,
+				cacheWriteReadRatio: 100,
+				economics: { ...DEFAULT_COMPACTION_ECONOMICS, windowReserveTokens: 10_000 },
+			}),
+		).toMatchObject({ compact: true, reason: "window_protection" });
+	});
+
+	it("never applies the cooldown before the first compaction", () => {
+		expect(decision({ requestsSinceLastCompaction: null })).toMatchObject({
+			compact: true,
+			reason: "economic",
+			requestsSinceLastCompaction: null,
+		});
+	});
 });
