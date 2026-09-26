@@ -24,6 +24,7 @@ import {
 	initialOnlineState,
 	recordBoundary,
 	recordCompaction,
+	recordCompletedPlanHandoff,
 	recordCorrection,
 	recordProviderRequest,
 	restoreOnlineState,
@@ -412,15 +413,21 @@ export function createOnlineContextCompactExtension(options: OnlineContextCompac
 		});
 
 		pi.on("input", (event, context) => {
-			if (event.streamingBehavior !== "steer" && !event.text.startsWith("CORRECTION:")) {
+			if (event.streamingBehavior === "steer" || event.text.startsWith("CORRECTION:")) {
+				ensureRestored(context);
+				pendingBoundary = undefined;
+				selected = undefined;
+				activeDebt = undefined;
+				state = recordCorrection(state);
+				save();
 				return { action: "continue" as const };
 			}
 			ensureRestored(context);
-			pendingBoundary = undefined;
-			selected = undefined;
-			activeDebt = undefined;
-			state = recordCorrection(state);
-			save();
+			const next = recordCompletedPlanHandoff(state);
+			if (next !== state) {
+				state = next;
+				save();
+			}
 			return { action: "continue" as const };
 		});
 

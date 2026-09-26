@@ -202,6 +202,8 @@ export function recordCompaction(
 		// id-matching alone cannot suppress the bogus boundary.
 		awaitingPlanRestatement: true,
 		lastCompactionRequestCount: state.requestCount,
+		lastBoundaryRequestCount: state.requestCount,
+		completedBoundaryRequestCounts: [],
 		pendingProgress: [],
 		lastContextTokens: null,
 		positiveContextDeltaTotal: 0,
@@ -209,6 +211,22 @@ export function recordCompaction(
 		nativeCompactionCount: state.nativeCompactionCount + 1,
 		cacheDebtTokens: state.cacheDebtTokens + Math.max(0, debt.debtTokens),
 		cacheDebtRepaymentTokens: state.cacheDebtRepaymentTokens + Math.max(0, debt.repaymentTokens),
+	};
+}
+
+export function recordCompletedPlanHandoff(state: OnlineState): OnlineState {
+	if (state.plan.length === 0 || state.plan.some((step) => step.status !== "completed")) return state;
+	return {
+		...state,
+		epoch: state.epoch + 1,
+		plan: [],
+		awaitingPlanRestatement: false,
+		pendingProgress: [],
+		lastBoundaryRequestCount: state.requestCount,
+		completedBoundaryRequestCounts: [],
+		lastContextTokens: null,
+		positiveContextDeltaTotal: 0,
+		positiveContextDeltaCount: 0,
 	};
 }
 

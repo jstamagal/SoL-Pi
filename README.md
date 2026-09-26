@@ -38,7 +38,7 @@ The standalone release contains four mechanisms that survived that process. They
 | Tools | **Action Fusion** | An edit or write can run its follow-up validation command in the same tool call. |
 | Observations | **ObservationPack** | Repeated large text results become stable handles with exact paged recall. |
 | Delegation | **Evidence-Preserving Reducer** | Long diagnostic logs become compact receipts only when every retained quotation matches the archived source. |
-| Context | **Online Context Compact** | Completed plan steps become candidate points for Pi's native compaction, subject to economic and window-pressure checks; after a successful compaction, Pi continues the task in a new turn. |
+| Context | **Online Context Compact** | Completed plan steps become candidate points for Pi's native compaction, subject to economic and window-pressure checks; after a successful compaction, Pi continues the task in a new turn. Boundary cadence resets after native compaction and when a finished plan hands off to a new user turn; carried cache debt and plan-restatement safeguards remain intact. |
 
 The mechanisms share four rules:
 

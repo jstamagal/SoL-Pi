@@ -9,6 +9,7 @@ import {
 	ONLINE_STATE_ENTRY,
 	recordBoundary,
 	recordCompaction,
+	recordCompletedPlanHandoff,
 	recordCorrection,
 	recordProviderRequest,
 	restoreOnlineState,
@@ -122,6 +123,34 @@ describe("Online Context Compact state snapshots", () => {
 			cacheDebtTokens: 1_200,
 			cacheDebtRepaymentTokens: 300,
 		});
+	});
+
+	it("resets boundary cadence after compaction without losing plan restatement or debt", () => {
+		const before = recordBoundary(recordProviderRequest(initialOnlineState(), 5_000), PLAN, PROGRESS);
+		const after = recordCompaction(before, { debtTokens: 1_200, repaymentTokens: 300 });
+		expect(after).toMatchObject({
+			plan: PLAN,
+			awaitingPlanRestatement: true,
+			lastBoundaryRequestCount: 1,
+			completedBoundaryRequestCounts: [],
+			cacheDebtTokens: 1_200,
+		});
+		expect(recordBoundary(recordProviderRequest(after, 5_100), PLAN, undefined).completedBoundaryRequestCounts).toEqual([1]);
+	});
+
+	it("starts fresh horizon only for a completed-plan follow-up", () => {
+		const completed = [{ id: "done", goal: "finish", status: "completed" as const }];
+		const before = recordBoundary(recordProviderRequest(initialOnlineState(), 5_000), completed, PROGRESS);
+		const after = recordCompletedPlanHandoff(before);
+		expect(after).toMatchObject({
+			epoch: 1,
+			plan: [],
+			completedBoundaryRequestCounts: [],
+			lastBoundaryRequestCount: 1,
+			cacheDebtTokens: 0,
+		});
+		expect(recordCompletedPlanHandoff(after)).toBe(after);
+		expect(recordCompletedPlanHandoff(recordBoundary(initialOnlineState(), PLAN, undefined))).toMatchObject({ plan: PLAN });
 	});
 
 	it("accumulates unpaid debt and savings across successive compactions", () => {
